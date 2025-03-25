@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import { motion } from "framer-motion";
+import { Star } from "lucide-react"; // Importing star icon
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -49,6 +50,27 @@ const ProductDetailPage = () => {
       </motion.div>
     );
 
+  // Function to render star ratings
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Star
+          key={i}
+          size={20}
+          className={`mx-1 ${
+            i <= Math.round(rating) ? "text-yellow-400" : "text-gray-500"
+          }`}
+        />
+      );
+    }
+    return stars;
+  };
+
+  // Calculate discounted price
+  const discountedPrice =
+    product.price - (product.price * product.discountPercentage) / 100;
+
   return (
     <motion.div
       className="max-w-7xl mx-auto p-6 bg-[#1E1E2E] text-white shadow-lg rounded-lg mt-6 border border-[#EC4176]"
@@ -89,6 +111,19 @@ const ProductDetailPage = () => {
             {product.title}
           </motion.h1>
 
+          {/* Product Rating */}
+          <motion.div
+            className="flex items-center mt-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            {renderStars(product.rating)}{" "}
+            <span className="ml-2 text-lg text-gray-300">
+              ({product.rating.toFixed(1)})
+            </span>
+          </motion.div>
+
           <motion.p
             className="text-gray-300 mt-3 text-lg"
             initial={{ opacity: 0, y: 10 }}
@@ -98,16 +133,25 @@ const ProductDetailPage = () => {
             {product.description}
           </motion.p>
 
-          <motion.p
-            className="text-green-400 text-2xl font-semibold mt-4"
+          {/* Price Section with Discount */}
+          <motion.div
+            className="mt-4 flex flex-col"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            ${product.price.toFixed(2)}
-          </motion.p>
+            <p className="text-lg text-orange-400 line-through">
+              Original Price: ${product.price.toFixed(2)}
+            </p>
+            <p className="text-green-400 text-2xl font-semibold">
+              Discounted Price: ${discountedPrice.toFixed(2)}
+            </p>
+            <p className="text-red-500 text-lg font-medium">
+              {product.discountPercentage}% OFF
+            </p>
+          </motion.div>
 
-          {/* Add to Cart Button - Smaller Size */}
+          {/* Add to Cart Button */}
           <motion.button
             onClick={() => dispatch(addToCart(product))}
             className="bg-[#EC4186] text-white px-5 py-2 rounded-md mt-4 font-medium text-base shadow-md hover:bg-[#f1146d] transition transform"
@@ -123,7 +167,3 @@ const ProductDetailPage = () => {
 };
 
 export default ProductDetailPage;
-
-
-
-
