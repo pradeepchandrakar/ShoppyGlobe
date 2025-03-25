@@ -1,37 +1,51 @@
-// src/components/ProductItem.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
+import { motion } from "framer-motion";
 
 const ProductItem = ({ product }) => {
   const dispatch = useDispatch();
 
   return (
-    <div className="border p-4 rounded-lg shadow-md bg-white flex flex-col items-center text-center">
-      <img 
-        src={product.thumbnail} 
-        alt={product.title} 
-        className="w-48 h-48 object-cover rounded-lg mb-3"
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      className="bg-[#1E1E2E] p-6 rounded-xl shadow-lg flex flex-col items-center text-center hover:shadow-2xl transition-all "
+    >
+      {/* Product Image */}
+      <motion.img
+        src={product.thumbnail}
+        alt={product.title}
+        className="w-48 h-48 object-cover rounded-lg mb-4 border-2 border-[#EC4186]"
+        whileHover={{ scale: 1.05 }}
       />
-      <h2 className="text-lg font-bold text-gray-800">{product.title}</h2>
-      <p className="text-green-600 font-semibold mt-1">${product.price}</p>
-      <div className="flex space-x-2 mt-3">
-        <Link 
-          to={`/product/${product.id}`} 
-          className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-700 transition"
+
+      {/* Product Title */}
+      <h2 className="text-lg font-bold text-[#EC4186]">{product.title}</h2>
+      <p className="text-[#EE544A] text-xl font-semibold mt-1">${product.price}</p>
+
+      {/* Buttons */}
+      <div className="flex space-x-3 mt-4">
+        <Link
+          to={`/product/${product.id}`}
+          className="bg-[#38124A] text-white px-4 py-2 rounded-lg hover:bg-[#EC4186] transition-all"
         >
           View Details
         </Link>
-        <button 
-          className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-700 transition"
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="bg-[#EC4186] text-white px-4 py- rounded-lg hover:bg-[#EE544A] transition-all"
           onClick={() => dispatch(addToCart(product))}
         >
           Add to Cart
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 export default ProductItem;
+

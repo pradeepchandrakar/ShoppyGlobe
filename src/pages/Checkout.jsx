@@ -1,6 +1,6 @@
-// src/components/Checkout.jsx
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import { motion } from "framer-motion";
 
 const Checkout = () => {
   const cart = useSelector((state) => state.cart.items);
@@ -27,26 +27,41 @@ const Checkout = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-4">Checkout</h1>
+    <motion.div
+      className="max-w-2xl mx-auto p-6 bg-[#1E1E2E] text-white shadow-lg rounded-lg mt-6"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h1 className="text-3xl font-extrabold text-[#EC4186] mb-4">Checkout</h1>
 
       {orderPlaced ? (
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-green-600">Order Placed Successfully! 🎉</h2>
-          <p className="text-gray-700 mt-2">Thank you for your purchase.</p>
-        </div>
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-xl font-semibold text-green-400">🎉 Order Placed Successfully!</h2>
+          <p className="text-gray-300 mt-2">Thank you for your purchase.</p>
+        </motion.div>
       ) : (
         <>
-          <h2 className="text-xl font-semibold mb-3">Total: ${totalPrice.toFixed(2)}</h2>
+          <h2 className="text-xl font-semibold mb-3 text-[#EE544A]">Total: ${totalPrice.toFixed(2)}</h2>
 
-          <div className="mb-4 p-4 bg-gray-100 rounded">
-            <h3 className="font-semibold text-lg">Order Summary:</h3>
+          <motion.div
+            className="mb-4 p-4 bg-[#2A2A3C] rounded-lg shadow-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h3 className="font-semibold text-lg text-[#EC4186]">Order Summary:</h3>
             {cart.map((item) => (
-              <p key={item.id} className="text-gray-700">
+              <p key={item.id} className="text-gray-300">
                 {item.title} - ${item.price} x {item.quantity}
               </p>
             ))}
-          </div>
+          </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
@@ -55,7 +70,7 @@ const Checkout = () => {
               value={formData.name}
               onChange={handleChange}
               placeholder="Full Name"
-              className="w-full border p-2 rounded"
+              className="w-full border border-gray-600 p-2 rounded bg-[#2A2A3C] text-white"
               required
             />
 
@@ -65,7 +80,7 @@ const Checkout = () => {
               value={formData.address}
               onChange={handleChange}
               placeholder="Shipping Address"
-              className="w-full border p-2 rounded"
+              className="w-full border border-gray-600 p-2 rounded bg-[#2A2A3C] text-white"
               required
             />
 
@@ -75,24 +90,27 @@ const Checkout = () => {
               value={formData.cardNumber}
               onChange={handleChange}
               placeholder="Card Number (16 digits)"
-              className="w-full border p-2 rounded"
+              className="w-full border border-gray-600 p-2 rounded bg-[#2A2A3C] text-white"
               minLength="16"
               maxLength="16"
               required
             />
 
-            <button
+            <motion.button
               type="submit"
-              className="bg-green-500 text-white px-4 py-2 rounded w-full hover:bg-green-700 transition"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-[#EC4186] text-white px-4 py-2 rounded w-full hover:bg-[#EE544A] transition-all shadow-md"
             >
               Place Order
-            </button>
+            </motion.button>
           </form>
         </>
       )}
-    </div>
+    </motion.div>
   );
 };
 
 export default Checkout;
+
 
