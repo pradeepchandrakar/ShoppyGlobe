@@ -34,25 +34,29 @@ const ProductItem = ({ product }) => {
 
   // ✅ Backend API Call to Add Item to Database
   const handleAddToCart = useCallback(async () => {
-    if (!userId) {
+    if (!userId || !user?.token) { // ✅ Ensure token exists before API call
       alert("Please log in to add items to the cart.");
       return;
     }
-
+  
     try {
-      const response = await axios.post("http://localhost:5000/api/cart/add", {
-        productId,
-        quantity: 1,
-        userId, // ✅ Sending user ID to backend
-      }, {
-        headers: { Authorization: `Bearer ${user?.token}` } // ✅ Ensure proper authentication
-      });
-
+      console.log("🔑 Sending Token:", user?.token); // ✅ Debugging token before sending
+  
+      const response = await axios.post(
+        "http://localhost:5000/api/cart/add",
+        { productId, quantity: 1, userId }, // ✅ Ensure userId is sent
+        {
+          headers: { Authorization: `Bearer ${user?.token}` }, // ✅ Send token properly
+        }
+      );
+  
       dispatch(addToCart(response.data.cart.items)); // ✅ Update Redux state
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      console.error("❌ Error adding to cart:", error.response?.data || error);
+      alert(error.response?.data?.message || "Failed to add item to cart.");
     }
   }, [dispatch, productId, userId, user?.token]);
+  
 
   return (
     <motion.div
@@ -107,6 +111,7 @@ const ProductItem = ({ product }) => {
 };
 
 export default ProductItem;
+
 
 
 

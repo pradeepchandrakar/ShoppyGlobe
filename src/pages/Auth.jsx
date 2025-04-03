@@ -25,9 +25,11 @@ const Auth = () => {
     const userData = isSignup ? { name, email, password } : { email, password }; // Include `name` only for signup
 
     try {
-      const response = await axios.post(url, userData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axios.post(
+        url,
+        userData,
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       const { token, user } = response.data;
       dispatch(login({ user, token }));
@@ -102,7 +104,3 @@ const Auth = () => {
 };
 
 export default Auth;
-
-
-
-

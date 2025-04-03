@@ -23,16 +23,12 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters long"],
-      select: false, // 🔒 Password will not be returned in queries
-    },
-    role: {
-      type: String,
-      enum: ["user", "admin"], // 🔒 Ensures only valid roles
-      default: "user",
+      select: false, // ✅ Hide password by default
     },
   },
-  { timestamps: true } // ✅ Automatically adds createdAt & updatedAt
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("User", UserSchema);
+
 

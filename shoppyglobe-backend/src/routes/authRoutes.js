@@ -1,14 +1,18 @@
 const express = require("express");
-const { registerUser, loginUser } = require("../controllers/authController");
+const { registerUser, loginUser, logoutUser } = require("../controllers/authController");
 
 const router = express.Router();
 
-// ✅ Change "/register" to "/signup"
-router.post("/signup", registerUser);  // 🔹 Updated Route
+// ✅ Signup Route
+router.post("/signup", registerUser);
 
-// ✅ Login User
+// ✅ Login Route
 router.post("/login", loginUser);
 
+// 🔹 ✅ Logout Route (Add this!)
+router.post("/logout", logoutUser);
+
 module.exports = router;
+
 
 

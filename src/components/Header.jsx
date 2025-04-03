@@ -10,7 +10,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const cartItems = useSelector((state) => state.cart.items || []); // ✅ Ensure cart.items exists
+  const cartItems = useSelector((state) => state.cart.items || []);
 
   // Restore User from LocalStorage
   useEffect(() => {
@@ -20,16 +20,18 @@ const Navbar = () => {
     }
   }, [dispatch]);
 
-  // Handle Logout
+  // ✅ FIXED: Handle Logout
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to log out?")) {
       try {
-        await axios.post("http://localhost:5000/api/auth/logout");
+        await axios.post("http://localhost:5000/api/auth/logout"); // ✅ Call logout API
+
         dispatch(logout());
         localStorage.removeItem("user");
+        localStorage.removeItem("token"); // ✅ Ensure JWT token is removed
         navigate("/login");
       } catch (error) {
-        console.error("Logout failed:", error);
+        console.error("Logout failed:", error.response?.data?.message || error.message);
       }
     }
   };
@@ -49,12 +51,11 @@ const Navbar = () => {
           Home
         </Link>
 
-        {/* ✅ Ensure Cart Icon is Always Visible */}
         <Link
           to="/cart"
           className="relative flex items-center hover:text-[#EC4176] transition duration-300"
         >
-          <ShoppingCart size={24} className="mr-1" /> {/* 🛒 Fix Icon Size */}
+          <ShoppingCart size={24} className="mr-1" />
           Cart
           {cartItems.length > 0 && (
             <motion.span
@@ -89,6 +90,8 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+
 
 
 
