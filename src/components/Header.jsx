@@ -9,18 +9,20 @@ import axios from "axios";
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user, token } = useSelector((state) => state.auth); // ✅ Token added
   const cartItems = useSelector((state) => state.cart.items || []);
 
-  // Restore User from LocalStorage
+  // ✅ Restore User & Token from LocalStorage
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser) {
+    const storedToken = localStorage.getItem("token");
+
+    if (storedUser && storedToken) {
       dispatch(setUser(storedUser));
     }
   }, [dispatch]);
 
-  // ✅ FIXED: Handle Logout
+  // ✅ Handle Logout
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to log out?")) {
       try {
@@ -29,7 +31,9 @@ const Navbar = () => {
         dispatch(logout());
         localStorage.removeItem("user");
         localStorage.removeItem("token"); // ✅ Ensure JWT token is removed
-        navigate("/login");
+
+        // ✅ Ensure full state reset
+        window.location.reload();
       } catch (error) {
         console.error("Logout failed:", error.response?.data?.message || error.message);
       }
@@ -69,7 +73,7 @@ const Navbar = () => {
           )}
         </Link>
 
-        {user ? (
+        {user && token ? ( // ✅ Check both user & token
           <button
             onClick={handleLogout}
             className="bg-red-500 hover:bg-red-600 px-4 py-1 rounded transition duration-200"
@@ -90,6 +94,7 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
 
 
 

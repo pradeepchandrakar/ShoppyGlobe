@@ -1,7 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const getUserFromLocalStorage = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user")) || null;
+  } catch (error) {
+    console.error("❌ Error parsing user from localStorage:", error);
+    return null;
+  }
+};
+
 const initialState = {
-  user: JSON.parse(localStorage.getItem("user")) || null,
+  user: getUserFromLocalStorage(),
   token: localStorage.getItem("token") || null,
 };
 
@@ -13,7 +22,7 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
 
-      // ✅ LocalStorage me save karein
+      // ✅ Save in LocalStorage
       localStorage.setItem("user", JSON.stringify(action.payload.user));
       localStorage.setItem("token", action.payload.token);
     },
@@ -21,7 +30,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
 
-      // ✅ LocalStorage se remove karein
+      // ✅ Remove from LocalStorage
       localStorage.removeItem("user");
       localStorage.removeItem("token");
     },
@@ -34,6 +43,8 @@ const authSlice = createSlice({
 
 export const { login, logout, setUser } = authSlice.actions;
 export default authSlice.reducer;
+
+
 
 
 

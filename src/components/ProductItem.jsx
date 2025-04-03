@@ -1,18 +1,28 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "../redux/cartSlice";
+import { setCart } from "../redux/cartSlice"; 
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const ProductItem = ({ product }) => {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user); // ✅ Get logged-in user
-  const userId = user ? user.id : null;
+  
+  // ✅ Redux se user aur token lo
+  const user = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
+  const [authToken, setAuthToken] = useState(token); // ✅ LocalStorage se bhi check karenge
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setAuthToken(storedToken);
+    }
+  }, [token]); // ✅ Token change hone par update ho
 
   if (!product) return <div className="text-red-500">Error: Product data missing.</div>;
 
-  const productId = product?.id || product?._id || ""; 
+  const productId = product?._id || "";
   const price = Number(product?.price) || 0;
   const discountPercentage = Number(product?.discountPercentage) || 0;
   const rating = Number(product?.rating) || 0;
@@ -21,87 +31,42 @@ const ProductItem = ({ product }) => {
     (price - (price * discountPercentage) / 100).toFixed(2)
   ), [price, discountPercentage]);
 
-  const stars = useMemo(() => {
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 !== 0;
-    return (
-      <span className="text-yellow-400 text-lg">
-        {"★".repeat(fullStars)}
-        {halfStar ? "☆" : ""}
-      </span>
-    );
-  }, [rating]);
-
-  // ✅ Backend API Call to Add Item to Database
   const handleAddToCart = useCallback(async () => {
-    if (!userId || !user?.token) { // ✅ Ensure token exists before API call
+    if (!authToken) {  // ✅ Fix: Token properly check ho raha hai
       alert("Please log in to add items to the cart.");
       return;
     }
-  
+
     try {
-      console.log("🔑 Sending Token:", user?.token); // ✅ Debugging token before sending
-  
       const response = await axios.post(
         "http://localhost:5000/api/cart/add",
-        { productId, quantity: 1, userId }, // ✅ Ensure userId is sent
-        {
-          headers: { Authorization: `Bearer ${user?.token}` }, // ✅ Send token properly
-        }
+        { productId, quantity: 1 },
+        { headers: { Authorization: `Bearer ${authToken}` } } // ✅ Ensure token is sent correctly
       );
-  
-      dispatch(addToCart(response.data.cart.items)); // ✅ Update Redux state
+
+      dispatch(setCart(response.data.cart.items)); // ✅ Redux cart update
     } catch (error) {
       console.error("❌ Error adding to cart:", error.response?.data || error);
       alert(error.response?.data?.message || "Failed to add item to cart.");
     }
-  }, [dispatch, productId, userId, user?.token]);
-  
+  }, [dispatch, productId, authToken]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4 }}
-      className="bg-[#24243E] p-6 rounded-xl text-center shadow-lg transition-all hover:shadow-xl"
-    >
-      <motion.img
-        src={product?.thumbnail || "/placeholder.jpg"}
-        alt={`Image of ${product.title || "Product"}`}
-        className="w-48 h-48 object-cover rounded-lg mx-auto mb-4 border-2 border-[#EC4186]"
-        whileHover={{ scale: 1.05 }}
-      />
+    <motion.div className="bg-[#24243E] p-6 rounded-xl text-center shadow-lg">
+      <motion.img src={product?.thumbnail || "/placeholder.jpg"} alt={product?.title} className="w-48 h-48 object-cover" />
 
-      <h2 className="text-lg font-bold text-[#EC4186]">
-        {product?.title || "Unknown Product"}
-      </h2>
+      <h2 className="text-lg font-bold text-[#EC4186]">{product?.title || "Unknown Product"}</h2>
 
       <p className="text-gray-400 line-through">${price.toFixed(2)}</p>
       <p className="text-[#EE544A] text-xl font-semibold">${discountedPrice}</p>
-      <p className="text-red-500 text-lg font-medium">{discountPercentage}% OFF</p>
-
-      <p className="text-yellow-400 text-lg font-medium mt-2">
-        Rating: {stars} ({rating.toFixed(1)})
-      </p>
 
       <div className="flex justify-center space-x-3 mt-4">
-        {productId ? (
-          <Link 
-            to={`/product/${productId}`} 
-            className="bg-[#38124A] text-white px-4 py-2 rounded-lg hover:bg-[#EC4186] transition-all"
-          >
-            View Details
-          </Link>
-        ) : (
-          <p className="text-gray-500">No Details Available</p>
-        )}
+        <Link to={`/product/${productId}`} className="bg-[#38124A] text-white px-4 py-2 rounded-lg">View Details</Link>
 
         <motion.button
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-[#EC4186] text-white px-4 py-2 rounded-lg hover:bg-[#EE544A] transition-all"
+          className="bg-[#EC4186] text-white px-4 py-2 rounded-lg"
           onClick={handleAddToCart}
-          aria-label={`Add ${product?.title || "Product"} to cart`}
         >
           Add to Cart
         </motion.button>
@@ -111,6 +76,8 @@ const ProductItem = ({ product }) => {
 };
 
 export default ProductItem;
+
+
 
 
 
