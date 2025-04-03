@@ -1,75 +1,103 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import React, { useMemo, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
+import axios from "axios";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const ProductItem = ({ product }) => {
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user); // ✅ Get logged-in user
+  const userId = user ? user.id : null;
 
-  // Calculate Discounted Price
-  const discountedPrice = (
-    product.price -
-    (product.price * product.discountPercentage) / 100
-  ).toFixed(2);
+  if (!product) return <div className="text-red-500">Error: Product data missing.</div>;
 
-  // Function to generate star rating
-  const renderStars = (rating) => {
+  const productId = product?.id || product?._id || ""; 
+  const price = Number(product?.price) || 0;
+  const discountPercentage = Number(product?.discountPercentage) || 0;
+  const rating = Number(product?.rating) || 0;
+
+  const discountedPrice = useMemo(() => (
+    (price - (price * discountPercentage) / 100).toFixed(2)
+  ), [price, discountPercentage]);
+
+  const stars = useMemo(() => {
     const fullStars = Math.floor(rating);
     const halfStar = rating % 1 !== 0;
     return (
       <span className="text-yellow-400 text-lg">
         {"★".repeat(fullStars)}
-        {halfStar && "☆"}
+        {halfStar ? "☆" : ""}
       </span>
     );
-  };
+  }, [rating]);
+
+  // ✅ Backend API Call to Add Item to Database
+  const handleAddToCart = useCallback(async () => {
+    if (!userId) {
+      alert("Please log in to add items to the cart.");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/cart/add", {
+        productId,
+        quantity: 1,
+        userId, // ✅ Sending user ID to backend
+      }, {
+        headers: { Authorization: `Bearer ${user?.token}` } // ✅ Ensure proper authentication
+      });
+
+      dispatch(addToCart(response.data.cart.items)); // ✅ Update Redux state
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
+  }, [dispatch, productId, userId, user?.token]);
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
-      className="bg-[#1E1E2E] p-6 rounded-xl shadow-lg flex flex-col items-center text-center hover:shadow-2xl transition-all"
+      className="bg-[#24243E] p-6 rounded-xl text-center shadow-lg transition-all hover:shadow-xl"
     >
-      {/* Product Image */}
       <motion.img
-        src={product.thumbnail}
-        alt={product.title}
-        className="w-48 h-48 object-cover rounded-lg mb-4 border-2 border-[#EC4186]"
+        src={product?.thumbnail || "/placeholder.jpg"}
+        alt={`Image of ${product.title || "Product"}`}
+        className="w-48 h-48 object-cover rounded-lg mx-auto mb-4 border-2 border-[#EC4186]"
         whileHover={{ scale: 1.05 }}
       />
 
-      {/* Product Title */}
-      <h2 className="text-lg font-bold text-[#EC4186]">{product.title}</h2>
+      <h2 className="text-lg font-bold text-[#EC4186]">
+        {product?.title || "Unknown Product"}
+      </h2>
 
-      {/* Price Details */}
-      <p className="text-lg text-orange-400 line-through">
-        ${product.price.toFixed(2)}
-      </p>
-      <p className="text-green-400 text-xl font-semibold">${discountedPrice}</p>
-      <p className="text-red-500 text-lg font-medium">
-        {product.discountPercentage}% OFF
-      </p>
+      <p className="text-gray-400 line-through">${price.toFixed(2)}</p>
+      <p className="text-[#EE544A] text-xl font-semibold">${discountedPrice}</p>
+      <p className="text-red-500 text-lg font-medium">{discountPercentage}% OFF</p>
 
-      {/* Rating */}
       <p className="text-yellow-400 text-lg font-medium mt-2">
-        Rating: {renderStars(product.rating)} ({product.rating})
+        Rating: {stars} ({rating.toFixed(1)})
       </p>
 
-      {/* Buttons */}
-      <div className="flex space-x-3 mt-4">
-        <Link
-          to={`/product/${product.id}`}
-          className="bg-[#38124A] text-white px-4 py-2 rounded-lg hover:bg-[#EC4186] transition-all"
-        >
-          View Details
-        </Link>
+      <div className="flex justify-center space-x-3 mt-4">
+        {productId ? (
+          <Link 
+            to={`/product/${productId}`} 
+            className="bg-[#38124A] text-white px-4 py-2 rounded-lg hover:bg-[#EC4186] transition-all"
+          >
+            View Details
+          </Link>
+        ) : (
+          <p className="text-gray-500">No Details Available</p>
+        )}
+
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="bg-[#EC4186] text-white px-4 py-2 rounded-lg hover:bg-[#EE544A] transition-all"
-          onClick={() => dispatch(addToCart(product))}
+          onClick={handleAddToCart}
+          aria-label={`Add ${product?.title || "Product"} to cart`}
         >
           Add to Cart
         </motion.button>
@@ -79,3 +107,8 @@ const ProductItem = ({ product }) => {
 };
 
 export default ProductItem;
+
+
+
+
+

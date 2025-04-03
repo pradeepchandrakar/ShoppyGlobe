@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -12,30 +13,50 @@ const ProductDetail = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    fetch(`https://dummyjson.com/products/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProduct(data);
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/products/${id}`);
+
+        if (!response.data || Object.keys(response.data).length === 0) {
+          throw new Error("Product not found.");
+        }
+
+        setProduct(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load product details.");
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching product details:", err);
-        setError("Failed to load product details.");
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchProduct();
   }, [id]);
 
-  if (loading) return <div className="text-center text-xl mt-10 text-gray-400">Loading...</div>;
-  if (error) return <div className="text-center text-red-500 mt-10">{error}</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <motion.div
+          className="text-xl text-gray-400"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
+        >
+          Loading product details...
+        </motion.div>
+      </div>
+    );
+
+  if (error)
+    return <div className="text-center text-red-500 mt-10">{error}</div>;
 
   return (
     <div className="max-w-5xl mx-auto p-8 bg-gradient-to-br from-[#1E1E2E] to-[#38124A] text-white shadow-lg rounded-xl mt-12 flex flex-col md:flex-row items-center">
       
       {/* Animated Product Image */}
       <motion.img
-        src={product.thumbnail}
-        alt={product.title}
-        className="w-full md:w-1/2 rounded-lg shadow-xl object-cover border-2 border-[#EC4186] "
+        src={product.thumbnail || "/placeholder.jpg"} // Fallback image
+        alt={product.title || "Product Image"}
+        className="w-full md:w-1/2 rounded-lg shadow-xl object-cover border-2 border-[#EC4186]"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
@@ -49,10 +70,12 @@ const ProductDetail = () => {
           transition={{ type: "spring", stiffness: 100 }}
           className="text-4xl font-extrabold text-[#EC4186] tracking-wide"
         >
-          {product.title}
+          {product.title || "Unknown Product"}
         </motion.h1>
 
-        <p className="text-gray-300 mt-2 leading-relaxed">{product.description}</p>
+        <p className="text-gray-300 mt-2 leading-relaxed">
+          {product.description || "No description available."}
+        </p>
 
         {/* Animated Price */}
         <motion.p
@@ -61,7 +84,7 @@ const ProductDetail = () => {
           transition={{ duration: 0.4 }}
           className="text-[#EE544A] text-3xl font-bold mt-4 tracking-wide"
         >
-          ${product.price}
+          ${product.price?.toFixed(2) || "0.00"}
         </motion.p>
 
         {/* Animated Add to Cart Button */}
@@ -79,6 +102,8 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+
+
 
 
 

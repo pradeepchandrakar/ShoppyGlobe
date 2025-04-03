@@ -1,20 +1,65 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import {
-  removeFromCart,
-  increaseQuantity,
-  decreaseQuantity,
-} from "../redux/cartSlice";
+import { removeFromCart, updateCart } from "../redux/cartSlice";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 const CartItem = ({ item }) => {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
-  // Calculate Discounted Price
-  const discountedPrice = (
-    item.price -
-    (item.price * item.discountPercentage) / 100
-  ).toFixed(2);
+  // Retrieve token from local storage
+  const token = localStorage.getItem("token");
+
+  // Axios configuration with token
+  const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+
+  // Update Quantity in Backend & Redux
+  const handleQuantityChange = async (type) => {
+    setLoading(true);
+    try {
+      const newQuantity = type === "increase" ? item.quantity + 1 : item.quantity - 1;
+
+      if (newQuantity > 0) {
+        const response = await axios.put(
+          "http://localhost:5000/api/cart/update",
+          { productId: item.productId, quantity: newQuantity },
+          axiosConfig
+        );
+
+        dispatch(updateCart(response.data.cart)); // ✅ Update Redux with fresh data from DB
+      } else {
+        await axios.delete(
+          `http://localhost:5000/api/cart/remove/${item.productId}`,
+          axiosConfig
+        );
+        dispatch(removeFromCart(item.productId));
+      }
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+    setLoading(false);
+  };
+
+  // Remove Item from Cart (Backend + Redux)
+  const handleRemoveItem = async () => {
+    setLoading(true);
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/cart/remove/${item.productId}`,
+        axiosConfig
+      );
+      dispatch(removeFromCart(item.productId));
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
+    setLoading(false);
+  };
 
   return (
     <motion.div
@@ -32,16 +77,16 @@ const CartItem = ({ item }) => {
         />
         <div>
           <h2 className="text-lg font-semibold">{item.title}</h2>
-          {/* Final Discounted Price */}
-          <p className="text-green-400 text-xl font-bold">${discountedPrice}</p>
+          <p className="text-green-400 text-xl font-bold">${item.price}</p>
         </div>
       </div>
 
       {/* Quantity Controls */}
       <div className="flex items-center space-x-3">
         <button
-          className="bg-gray-700 text-white px-3 py-1 rounded-l hover:bg-gray-500 transition"
-          onClick={() => dispatch(decreaseQuantity(item.id))}
+          className="bg-gray-700 text-white px-3 py-1 rounded-l hover:bg-gray-500 transition disabled:opacity-50"
+          onClick={() => handleQuantityChange("decrease")}
+          disabled={loading}
         >
           ➖
         </button>
@@ -49,8 +94,9 @@ const CartItem = ({ item }) => {
           {item.quantity}
         </span>
         <button
-          className="bg-gray-700 text-white px-3 py-1 rounded-r hover:bg-gray-500 transition"
-          onClick={() => dispatch(increaseQuantity(item.id))}
+          className="bg-gray-700 text-white px-3 py-1 rounded-r hover:bg-gray-500 transition disabled:opacity-50"
+          onClick={() => handleQuantityChange("increase")}
+          disabled={loading}
         >
           ➕
         </button>
@@ -58,13 +104,17 @@ const CartItem = ({ item }) => {
 
       {/* Remove Button */}
       <button
-        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-        onClick={() => dispatch(removeFromCart(item.id))}
+        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+        onClick={handleRemoveItem}
+        disabled={loading}
       >
-        ❌ Remove
+        {loading ? "Removing..." : "❌ Remove"}
       </button>
     </motion.div>
   );
 };
 
 export default CartItem;
+
+
+

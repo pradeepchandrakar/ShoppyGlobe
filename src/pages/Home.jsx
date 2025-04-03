@@ -1,59 +1,80 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import { motion } from "framer-motion";
 import SearchBar from "../components/SearchBar";
 import ProductItem from "../components/ProductItem";
 
 const Home = () => {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetch("https://dummyjson.com/products")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products) {
-          setProducts(data.products);
-          setFilteredProducts(data.products);
-        } else {
-          setError("Failed to load products.");
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching products:", err);
-        setError("Failed to load products.");
-      })
-      .finally(() => setLoading(false));
+  // Fetch products from API
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const controller = new AbortController();
+
+    try {
+      const response = await axios.get("http://localhost:5000/api/products", { signal: controller.signal });
+      console.log("Fetched products:", response.data);
+      setProducts(response.data);
+    } catch (err) {
+      if (axios.isCancel(err)) {
+        console.warn("Request canceled:", err.message);
+      } else if (err.response) {
+        setError(`Error ${err.response.status}: ${err.response.data.message || "Failed to load products"}`);
+      } else {
+        setError("Network error: Please check your connection.");
+      }
+    } finally {
+      setLoading(false);
+    }
+
+    return () => controller.abort();
   }, []);
 
-  const handleSearch = (query) => {
-    const filtered = products.filter((product) =>
-      product.title.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-  };
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // ✅ Implement Debounced Search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [query]);
+
+  // Filter products based on debounced query
+  const filteredProducts = products.filter((product) =>
+    (product?.name || "").toLowerCase().includes(debouncedQuery.toLowerCase())
+  );
 
   return (
-    <div className="p-6 min-h-screen bg-gradient-to-r from-[#1E1E2E] to-[#121212] text-white ">
-      {/* Animated Search Bar */}
+    <div className="p-6 min-h-screen bg-gradient-to-r from-[#1E1E2E] to-[#121212] text-white">
+      
+      {/* Search Bar */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar onSearch={setQuery} />
       </motion.div>
 
       {loading ? (
         <motion.p
-          className="text-center text-xl text-gray-300 font-semibold"
+          className="text-center text-xl text-gray-300"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          Loading products...
+          Loading...
         </motion.p>
       ) : error ? (
         <motion.p
@@ -66,25 +87,20 @@ const Home = () => {
         </motion.p>
       ) : (
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-10 "
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.7 }}
         >
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <motion.div
-                key={product.id}
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="w-full p-4 bg-[#24243E] text-white rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 border border-[#EC4176]"
-              >
+              <motion.div key={product._id} whileHover={{ scale: 1.05 }}>
                 <ProductItem product={product} />
               </motion.div>
             ))
           ) : (
             <p className="text-center col-span-full text-gray-400 text-lg">
-              No products found
+              No products found. Try adding some!
             </p>
           )}
         </motion.div>
@@ -94,6 +110,8 @@ const Home = () => {
 };
 
 export default Home;
+
+
 
 
 

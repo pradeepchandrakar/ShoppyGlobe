@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import CartItem from "../components/CartItem";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const Cart = () => {
-  const cart = useSelector((state) => state.cart.items);
-  const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const cart = useSelector((state) => state.cart.items) || []; // Ensure cart is always an array
+  const [isMounted, setIsMounted] = useState(false); // Prevent hydration mismatch in SSR
+
+  useEffect(() => {
+    setIsMounted(true); // Ensure component is mounted
+  }, []);
+
+  // UseMemo to optimize total price calculation
+  const totalPrice = useMemo(
+    () => cart.reduce((total, item) => total + (item.price || 0) * (item.quantity || 1), 0),
+    [cart]
+  );
+
+  if (!isMounted) return null; // Prevents SSR hydration mismatch errors
 
   return (
     <motion.div
@@ -28,7 +40,7 @@ const Cart = () => {
         <>
           <div className="space-y-4">
             {cart.map((item) => (
-              <CartItem key={item.id} item={item} />
+              <CartItem key={item.id || item._id} item={item} />
             ))}
           </div>
 
@@ -61,5 +73,6 @@ const Cart = () => {
 };
 
 export default Cart;
+
 
 

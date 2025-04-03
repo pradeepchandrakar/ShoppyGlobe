@@ -8,6 +8,7 @@ import ProductList from "./components/ProductList";
 const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
 const Checkout = lazy(() => import("./pages/Checkout"));
+const Login = lazy(() => import("./components/Login.jsx"));  // ✅ Added Login import
 const NotFound = lazy(() => import("./components/NotFound"));
 
 const pageTransition = {
@@ -58,6 +59,16 @@ const App = () => {
               } 
             />
             <Route 
+              path="/login"  // ✅ Fixed: Added Login Route
+              element={
+                <Suspense fallback={<LoadingScreen message="Loading Login..." />}>
+                  <MotionWrapper>
+                    <Login />
+                  </MotionWrapper>
+                </Suspense>
+              } 
+            />
+            <Route 
               path="*" 
               element={
                 <Suspense fallback={<LoadingScreen message="Loading..." />}>
@@ -74,7 +85,7 @@ const App = () => {
   );
 };
 
-// Loading Component with dark mode styling
+// Loading Component
 const LoadingScreen = ({ message }) => (
   <motion.div
     className="text-center text-lg text-gray-400 mt-10"
@@ -86,7 +97,7 @@ const LoadingScreen = ({ message }) => (
   </motion.div>
 );
 
-// Wrapper for animated page transitions
+// Wrapper for animations
 const MotionWrapper = ({ children }) => (
   <motion.div
     variants={pageTransition}
@@ -100,6 +111,7 @@ const MotionWrapper = ({ children }) => (
 );
 
 export default App;
+
 
 
 

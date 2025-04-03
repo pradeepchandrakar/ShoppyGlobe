@@ -1,112 +1,91 @@
-// src/components/Cart.jsx
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { removeFromCart, updateQuantity } from "../redux/cartSlice";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { setCart } from "../redux/cartSlice";
+import CartItem from "../components/CartItem";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const Cart = () => {
-  const cart = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart.items);
+  const [loading, setLoading] = useState(true);
 
-  const handleQuantityChange = (id, quantity) => {
-    if (quantity > 0) {
-      dispatch(updateQuantity({ id, quantity }));
-    }
-  };
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:5000/api/cart", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        dispatch(setCart(response.data.cart.items)); // ✅ Fetch cart from DB
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+      }
+      setLoading(false);
+    };
+
+    fetchCart();
+  }, [dispatch]);
+
+  if (loading) return <p>Loading cart...</p>;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto min-h-screen bg-gradient-to-r from-[#1E1E2E] to-[#121212] text-white">
-      <h1 className="text-3xl font-bold mb-6 text-center text-[#EC4176]">Shopping Cart</h1>
+    <motion.div
+      className="max-w-4xl mx-auto p-6 bg-[#1E1E2E] text-white shadow-lg rounded-lg mt-6"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h1 className="text-3xl font-extrabold text-[#EC4186] mb-6">Shopping Cart</h1>
 
       {cart.length === 0 ? (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-gray-400 text-center text-lg"
-        >
+        <p className="text-gray-400 text-lg">
           Your cart is empty.{" "}
-          <Link to="/" className="text-[#EC4176] hover:underline">
-            Shop Now
+          <Link to="/" className="text-[#EC4186] hover:underline">
+            Go Shopping
           </Link>
-        </motion.p>
+        </p>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-4"
-        >
-          {cart.map((item) => (
-            <motion.div
-              key={item.id}
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="flex justify-between items-center border border-[#EC4176] p-4 rounded-lg shadow-lg bg-[#24243E]"
-            >
-              <div className="flex items-center space-x-4">
-                <img
-                  src={item.thumbnail}
-                  alt={item.title}
-                  className="w-20 h-20 object-cover rounded-lg shadow-md"
-                />
-                <div>
-                  <h2 className="text-lg font-semibold">{item.title}</h2>
-                  <p className="text-gray-300">${item.price}</p>
-                  <div className="flex items-center mt-2">
-                    {/* Decrease Quantity Button */}
-                    <button
-                      className="px-3 py-1 bg-gray-600 rounded-l hover:bg-gray-500 transition"
-                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                    >
-                      -
-                    </button>
-                    {/* Show Quantity */}
-                    <span className="px-4 py-1 border border-gray-500 text-white">
-                      {item.quantity}
-                    </span>
-                    {/* Increase Quantity Button */}
-                    <button
-                      className="px-3 py-1 bg-gray-600 rounded-r hover:bg-gray-500 transition"
-                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-                onClick={() => dispatch(removeFromCart(item.id))}
-              >
-                Remove
-              </button>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
+        <>
+          <div className="space-y-4">
+            {cart.map((item) => (
+              <CartItem key={item.productId} item={item} />
+            ))}
+          </div>
 
-      {cart.length > 0 && (
-        <div className="mt-8 text-center">
-          <h2 className="text-2xl font-bold text-[#EC4176]">
-            Total: ${cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
-          </h2>
-          <Link to="/checkout">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="mt-4 bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition shadow-lg"
+          <div className="mt-6 flex justify-between items-center border-t border-gray-600 pt-4">
+            <motion.h2
+              className="text-2xl font-semibold text-[#EE544A]"
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.4 }}
             >
-              Proceed to Checkout
-            </motion.button>
-          </Link>
-        </div>
+              Total: $
+              {cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}
+            </motion.h2>
+
+            <Link to="/checkout">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-[#EC4186] text-white px-6 py-2 rounded-lg hover:bg-[#EE544A] transition-all shadow-md"
+              >
+                Proceed to Checkout
+              </motion.button>
+            </Link>
+          </div>
+        </>
       )}
-    </div>
+    </motion.div>
   );
 };
 
 export default Cart;
+
+
+
 
 
 

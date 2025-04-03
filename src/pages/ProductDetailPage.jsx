@@ -13,10 +13,10 @@ const ProductDetailPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`https://dummyjson.com/products/${id}`)
+    fetch(`http://localhost:5000/api/products/${String(id)}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data && data.id) {
+        if (data && (data.id || data._id)) {
           setProduct(data);
         } else {
           setError("Product not found.");
@@ -51,25 +51,19 @@ const ProductDetailPage = () => {
     );
 
   // Function to render star ratings
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Star
-          key={i}
-          size={20}
-          className={`mx-1 ${
-            i <= Math.round(rating) ? "text-yellow-400" : "text-gray-500"
-          }`}
-        />
-      );
-    }
-    return stars;
+  const renderStars = (rating = 0) => {
+    return [...Array(5)].map((_, i) => (
+      <Star
+        key={i}
+        size={20}
+        className={`mx-1 ${i < Math.round(rating) ? "text-yellow-400" : "text-gray-500"}`}
+      />
+    ));
   };
 
-  // Calculate discounted price
-  const discountedPrice =
-    product.price - (product.price * product.discountPercentage) / 100;
+  // Ensure discountPercentage is defined
+  const discount = product.discountPercentage || 0;
+  const discountedPrice = product.price - (product.price * discount) / 100;
 
   return (
     <motion.div
@@ -118,9 +112,9 @@ const ProductDetailPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            {renderStars(product.rating)}{" "}
+            {renderStars(product.rating)}
             <span className="ml-2 text-lg text-gray-300">
-              ({product.rating.toFixed(1)})
+              ({(product.rating || 0).toFixed(1)})
             </span>
           </motion.div>
 
@@ -147,7 +141,7 @@ const ProductDetailPage = () => {
               Discounted Price: ${discountedPrice.toFixed(2)}
             </p>
             <p className="text-red-500 text-lg font-medium">
-              {product.discountPercentage}% OFF
+              {discount}% OFF
             </p>
           </motion.div>
 
@@ -167,3 +161,4 @@ const ProductDetailPage = () => {
 };
 
 export default ProductDetailPage;
+
