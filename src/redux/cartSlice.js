@@ -9,10 +9,11 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     setCart: (state, action) => {
+      console.log("Cart Updated:", action.payload); // ✅ Debugging ke liye
       state.items = action.payload;
     },
     addToCart: (state, action) => {
-      state.items.push(action.payload); // ✅ Add new item to cart
+      state.items.push(action.payload);
     },
     updateCart: (state, action) => {
       state.items = action.payload.items;
@@ -25,6 +26,8 @@ const cartSlice = createSlice({
 
 export const { setCart, addToCart, updateCart, removeFromCart } = cartSlice.actions;
 export default cartSlice.reducer;
+
+
 
 
 

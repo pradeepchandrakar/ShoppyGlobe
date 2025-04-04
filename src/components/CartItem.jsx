@@ -8,10 +8,8 @@ const CartItem = ({ item }) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
 
-  // Retrieve token from local storage
   const token = localStorage.getItem("token");
 
-  // Axios configuration with token
   const axiosConfig = {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -19,7 +17,6 @@ const CartItem = ({ item }) => {
     },
   };
 
-  // Update Quantity in Backend & Redux
   const handleQuantityChange = async (type) => {
     setLoading(true);
     try {
@@ -31,8 +28,7 @@ const CartItem = ({ item }) => {
           { productId: item.productId, quantity: newQuantity },
           axiosConfig
         );
-
-        dispatch(updateCart(response.data.cart)); // ✅ Update Redux with fresh data from DB
+        dispatch(updateCart(response.data.cart));
       } else {
         await axios.delete(
           `http://localhost:5000/api/cart/remove/${item.productId}`,
@@ -46,7 +42,6 @@ const CartItem = ({ item }) => {
     setLoading(false);
   };
 
-  // Remove Item from Cart (Backend + Redux)
   const handleRemoveItem = async () => {
     setLoading(true);
     try {
@@ -61,6 +56,13 @@ const CartItem = ({ item }) => {
     setLoading(false);
   };
 
+  // 🧠 Use product data from backend
+  const product = item.product || {};
+  const discountedPrice =
+    product.price && product.discount
+      ? (product.price * (1 - product.discount / 100)).toFixed(2)
+      : product.price || "N/A";
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -70,14 +72,14 @@ const CartItem = ({ item }) => {
       {/* Product Details */}
       <div className="flex items-center space-x-4">
         <motion.img
-          src={item.thumbnail}
-          alt={item.title}
+          src={product.thumbnail}
+          alt={product.title}
           className="w-20 h-20 object-cover rounded-lg shadow-md border border-[#EC4176]"
           whileHover={{ scale: 1.05 }}
         />
         <div>
-          <h2 className="text-lg font-semibold">{item.title}</h2>
-          <p className="text-green-400 text-xl font-bold">${item.price}</p>
+          <h2 className="text-lg font-semibold">{product.title || "Untitled"}</h2>
+          <p className="text-green-400 text-xl font-bold">${discountedPrice}</p>
         </div>
       </div>
 
@@ -115,6 +117,7 @@ const CartItem = ({ item }) => {
 };
 
 export default CartItem;
+
 
 
 

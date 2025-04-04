@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout, setUser } from "../redux/authSlice";
+import { logout, setUser, fetchCart } from "../redux/authSlice"; // ✅ fetchCart import kiya
 import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import axios from "axios";
@@ -9,31 +9,26 @@ import axios from "axios";
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, token } = useSelector((state) => state.auth); // ✅ Token added
+  const { user } = useSelector((state) => state.auth);
   const cartItems = useSelector((state) => state.cart.items || []);
 
-  // ✅ Restore User & Token from LocalStorage
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    const storedToken = localStorage.getItem("token");
-
-    if (storedUser && storedToken) {
+    if (storedUser) {
       dispatch(setUser(storedUser));
+      dispatch(fetchCart()); // ✅ Login ke turant baad cart fetch karein
     }
   }, [dispatch]);
 
-  // ✅ Handle Logout
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to log out?")) {
       try {
-        await axios.post("http://localhost:5000/api/auth/logout"); // ✅ Call logout API
+        await axios.post("http://localhost:5000/api/auth/logout");
 
         dispatch(logout());
         localStorage.removeItem("user");
-        localStorage.removeItem("token"); // ✅ Ensure JWT token is removed
-
-        // ✅ Ensure full state reset
-        window.location.reload();
+        localStorage.removeItem("token");
+        navigate("/login");
       } catch (error) {
         console.error("Logout failed:", error.response?.data?.message || error.message);
       }
@@ -73,7 +68,7 @@ const Navbar = () => {
           )}
         </Link>
 
-        {user && token ? ( // ✅ Check both user & token
+        {user ? (
           <button
             onClick={handleLogout}
             className="bg-red-500 hover:bg-red-600 px-4 py-1 rounded transition duration-200"
@@ -94,6 +89,10 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+
+
+
 
 
 

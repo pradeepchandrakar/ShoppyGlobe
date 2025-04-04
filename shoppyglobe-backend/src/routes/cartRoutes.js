@@ -3,16 +3,21 @@ const router = express.Router();
 const cartController = require("../controllers/cartController"); 
 const authMiddleware = require("../middleware/authMiddleware"); // Protect routes
 
-// 🛒 Add a product to the cart (Protected)
+// 🛒 Get user cart
+router.get("/", authMiddleware, cartController.getCart);
+
+// 🛒 Add a product to the cart
 router.post("/add", authMiddleware, cartController.addToCart);
 
-// 🛒 Update cart quantity (Protected)
+// 🛒 Update cart quantity
 router.put("/update", authMiddleware, cartController.updateCart);
 
-// 🛒 Remove item from cart (Fixed Route)
-router.delete("/remove/:id", authMiddleware, cartController.removeFromCart);
+// 🛒 Remove item from cart (FIXED ✅)
+router.delete("/remove/:productId", authMiddleware, cartController.removeFromCart);
 
 module.exports = router;
+
+
 
 
 

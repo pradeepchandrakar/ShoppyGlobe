@@ -16,7 +16,7 @@ const Cart = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get("http://localhost:5000/api/cart", {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: Bearer ${token} },
         });
 
         dispatch(setCart(response.data.cart.items)); // ✅ Fetch cart from DB
@@ -83,6 +83,7 @@ const Cart = () => {
 };
 
 export default Cart;
+
 
 
 
