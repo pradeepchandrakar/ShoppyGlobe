@@ -10,8 +10,10 @@ const cartSlice = createSlice({
   reducers: {
     // ✅ Set entire cart (e.g., after fetch or login)
     setCart: (state, action) => {
-      console.log("Cart Updated:", action.payload); // Debug log
-      state.items = action.payload || [];
+      state.items = action.payload.map((item) => ({
+        ...item,
+        product: item.product || {}, // Ensure product is preserved
+      }));
     },
 
     // ✅ Add item or increase quantity if it exists
@@ -25,14 +27,14 @@ const cartSlice = createSlice({
         existing.quantity += incoming.quantity || 1;
       } else {
         state.items.push({
-          ...incoming,
+          productId: incoming.productId,
           quantity: incoming.quantity || 1,
-          product: incoming.product || {}, // Fallback product
+          product: incoming.product || {}, // Ensure full product data
         });
       }
     },
 
-    // ✅ Update entire cart with updated quantities (and preserve product data)
+    // ✅ Update entire cart with updated quantities
     updateCart: (state, action) => {
       state.items = action.payload.items.map((newItem) => {
         const existing = state.items.find(
@@ -57,6 +59,7 @@ const cartSlice = createSlice({
 
 export const { setCart, addToCart, updateCart, removeFromCart } = cartSlice.actions;
 export default cartSlice.reducer;
+
 
 
 

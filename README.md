@@ -12,70 +12,156 @@ Currently, two official plugins are available:
 If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 # ShoppyGlobe
 
+Sure! Here's a clean and professional `README.md` file for your **Full-Stack Shopping Cart App**:
 
-# ShoppyGlobe
+---
 
-ShoppyGlobe is a modern e-commerce application built with React, Redux, and Tailwind CSS. It allows users to browse products, add items to their cart, and proceed to checkout seamlessly.
+```markdown
+# 🛒 Full Stack Shopping Cart Application
 
-## Features
+This is a MERN (MongoDB, Express.js, React.js, Node.js) based shopping cart application where users can view products, add them to cart, update quantities, and remove items — all synced with a MongoDB backend.
 
-- 🛒 Browse products fetched from an API
-- 🔍 Search functionality to find products easily
-- 📦 Add, remove, and update product quantities in the cart
-- 💾 Cart persistence using local storage
-- 💳 Checkout page to simulate purchase flow
-- 🚀 Smooth UI animations with Framer Motion
+---
 
-## Tech Stack
+## 🚀 Features
 
-- **Frontend:** React, React Router, Redux Toolkit, Tailwind CSS
-- **State Management:** Redux Toolkit
-- **Animations:** Framer Motion
-- **Icons:** Lucide React
-- **API:** DummyJSON API for mock product data
+- ✅ User Authentication (JWT-based)
+- 🛍 Product Listing with Dynamic Discounts
+- 🛒 Fully Functional Cart (Add, Update, Delete)
+- 💾 Cart data stored in MongoDB (not in local storage)
+- ⚛️ State Management using Redux
+- 🎨 Responsive UI with TailwindCSS + Framer Motion
+- 🔐 Secure API with middleware protection
 
-## Installation
+---
 
-1. Clone the repository:
+## 📁 Project Structure
 
-   ```sh
-   git clone https://github.com/pradeepchandrakar/ShoppyGlobe
-   cd ShoppyGlobe
-   ```
-
-2. Install dependencies:
-
-   ```sh
-   npm install
-   ```
-
-3. Start the development server:
-
-   ```sh
-   npm run dev
-   ```
-
-## Deployment
-
-To build the project for production, run:
-
-```sh
-npm run build
+```
+/client        # Frontend - React
+/server        # Backend - Express + MongoDB
 ```
 
-## Troubleshooting
+---
 
-If you encounter errors like missing dependencies, ensure they are installed:
+## 📦 Technologies Used
 
-```sh
-npm install framer-motion lucide-react react-redux @reduxjs/toolkit react-router-dom
+### Frontend:
+- React.js
+- Redux Toolkit
+- Axios
+- React Router
+- Framer Motion
+- TailwindCSS
+
+### Backend:
+- Node.js
+- Express.js
+- MongoDB + Mongoose
+- JWT Authentication
+- dotenv
+
+---
+
+## 🔧 Setup Instructions
+
+### 📌 Prerequisites
+- Node.js & npm
+- MongoDB
+- [Optional] Postman for API testing
+
+---
+
+### 🔐 Environment Variables
+
+Create `.env` file in `server/`:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret_key
 ```
 
-## Contributing
+---
 
-Contributions are welcome! Feel free to fork the repo, create a new branch, and submit a pull request.
+### ▶️ Run the App
 
-## License
+#### 1. Backend
 
-This project is licensed under the MIT License.
+```bash
+cd server
+npm install
+npm run dev
+```
 
+#### 2. Frontend
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Now visit 👉 `http://localhost:5173`
+
+---
+
+## 📦 API Routes
+
+| Method | Endpoint                   | Description                 |
+|--------|----------------------------|-----------------------------|
+| POST   | `/api/auth/register`       | Register new user           |
+| POST   | `/api/auth/login`          | Login user & get token      |
+| GET    | `/api/products`            | Fetch all products          |
+| POST   | `/api/cart/add`            | Add item to cart            |
+| PUT    | `/api/cart/update`         | Update cart item quantity   |
+| DELETE | `/api/cart/remove/:id`     | Remove item from cart       |
+| GET    | `/api/cart/`               | Fetch user cart             |
+
+---
+
+## 🤖 Sample Users
+
+You can create your own or register through the frontend.  
+Make sure to pass the token in headers for protected routes:
+
+```http
+Authorization: Bearer <your_token>
+```
+
+---
+
+## 🧠 Notes
+
+- Cart is stored in MongoDB linked with the authenticated user's ID.
+- No use of `localStorage` for persistent cart data.
+- React state is synced with backend using Redux.
+
+---
+
+## 🛠 Future Improvements
+
+- ✅ Product filtering, search & categories
+- ✅ Stripe Payment Integration
+- ✅ Order History
+- ✅ Admin Dashboard
+
+---
+
+
+
+## 👨‍💻 Author
+
+Made with ❤️ by [Your Name]  
+GitHub: [github.com/yourusername](https://github.com/yourusername)
+
+---
+
+## 📄 License
+
+MIT License
+```
+
+---
+
+Let me know if you want a version with screenshots, badges, or deployment steps (e.g. for Vercel/Render).

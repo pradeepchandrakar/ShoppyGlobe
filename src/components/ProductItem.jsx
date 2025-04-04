@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { setCart } from "../redux/cartSlice";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const ProductItem = ({ product }) => {
   const dispatch = useDispatch();
@@ -29,13 +30,9 @@ const ProductItem = ({ product }) => {
         }
       );
 
-      // Enrich items with product details
-      const updatedCart = response.data.cart.items.map((item) => {
-        if (item.productId === product._id) {
-          return { ...item, product };
-        }
-        return item;
-      });
+      const updatedCart = response.data.cart.items.map((item) =>
+        item.productId === product._id ? { ...item, product } : item
+      );
 
       dispatch(setCart(updatedCart));
     } catch (error) {
@@ -44,23 +41,58 @@ const ProductItem = ({ product }) => {
     }
   };
 
+  const discount = product.discountPercentage || 0;
+  const discountedPrice = (
+    product.price -
+    (product.price * discount) / 100
+  ).toFixed(2);
+
   return (
-    <div className="bg-[#1E1E2E] border border-[#EC4186] rounded-xl p-4 shadow-md text-white">
-      <img
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      className="bg-[#1E1E2E] p-6 rounded-xl shadow-lg flex flex-col items-center text-center hover:shadow-2xl transition-all border border-[#EC4186]"
+    >
+      {/* Product Image */}
+      <motion.img
         src={product.thumbnail}
         alt={product.title}
-        className="w-full h-48 object-cover rounded-lg mb-4"
+        className="w-48 h-48 object-cover rounded-lg mb-4 border-2 border-[#EC4186]"
+        whileHover={{ scale: 1.05 }}
+        loading="lazy"
       />
-      <h2 className="text-lg font-bold mb-2">{product.title}</h2>
-      <p className="text-pink-400 font-semibold mb-4">${product.price}</p>
 
-      <div className="flex gap-2">
-        <button
-          onClick={handleAddToCart}
+      {/* Product Title */}
+      <h2 className="text-lg font-bold text-[#EC4186] mb-2">{product.title}</h2>
+
+      {/* Price Details */}
+      {discount > 0 ? (
+        <>
+          <p className="text-orange-400 line-through text-sm">
+            ${product.price.toFixed(2)}
+          </p>
+          <p className="text-green-400 text-xl font-semibold">
+            ${discountedPrice}
+          </p>
+          <p className="text-red-400 text-sm">{discount}% OFF</p>
+        </>
+      ) : (
+        <p className="text-pink-400 text-xl font-semibold">
+          ${product.price.toFixed(2)}
+        </p>
+      )}
+
+      {/* Buttons */}
+      <div className="flex gap-3 mt-4 w-full">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className="bg-[#EC4186] hover:bg-[#EE544A] text-white py-2 px-4 rounded-lg w-full"
+          onClick={handleAddToCart}
         >
           🛒 Add to Cart
-        </button>
+        </motion.button>
 
         <Link
           to={`/product/${product._id}`}
@@ -69,11 +101,13 @@ const ProductItem = ({ product }) => {
           🔍 View
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 export default ProductItem;
+
+
 
 
 

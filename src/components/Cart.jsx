@@ -31,6 +31,17 @@ const Cart = () => {
 
   if (loading) return <p>Loading cart...</p>;
 
+  const calculateDiscountedPrice = (item) => {
+    const product = item?.product || item?.productId || {};
+    const price = product.price || 0;
+    const discount = product.discountPercentage || 0;
+
+    const discountedPrice = price * (1 - discount / 100);
+    return discountedPrice * item.quantity;
+  };
+
+  const total = cart.reduce((acc, item) => acc + calculateDiscountedPrice(item), 0);
+
   return (
     <motion.div
       className="max-w-4xl mx-auto p-6 bg-[#1E1E2E] text-white shadow-lg rounded-lg mt-6"
@@ -55,7 +66,7 @@ const Cart = () => {
                 key={item.productId}
                 item={{
                   ...item,
-                  product: item.product || item.productId || {}, // 🧠 fallback
+                  product: item.product || item.productId || {},
                 }}
               />
             ))}
@@ -68,17 +79,7 @@ const Cart = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4 }}
             >
-              Total: $
-              {cart
-                .reduce((total, item) => {
-                  const price =
-                    item?.price ||
-                    item?.product?.price ||
-                    item?.productId?.price ||
-                    0;
-                  return total + price * item.quantity;
-                }, 0)
-                .toFixed(2)}
+              Total: ${total.toFixed(2)}
             </motion.h2>
 
             <Link to="/checkout">
@@ -98,6 +99,7 @@ const Cart = () => {
 };
 
 export default Cart;
+
 
 
 

@@ -8,7 +8,7 @@ const ProductList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch products function (wrapped in useCallback for optimization)
+  // Fetch products from API
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -24,15 +24,16 @@ const ProductList = () => {
     }
   }, []);
 
-  // Fetch products on component mount
+  // Trigger on mount
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  if (loading)
+  // Loading UI
+  if (loading) {
     return (
       <motion.div
-        className="text-center text-xl text-gray-400 mt-10 animate-pulse"
+        className="text-center text-xl text-gray-400 mt-20 animate-pulse"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -40,19 +41,26 @@ const ProductList = () => {
         Loading products...
       </motion.div>
     );
+  }
 
-  if (error)
+  // Error UI
+  if (error) {
     return (
-      <div className="text-center text-red-500 mt-10">
-        {error}
+      <motion.div
+        className="text-center text-red-500 mt-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <p>{error}</p>
         <button
           onClick={fetchProducts}
-          className="block mx-auto mt-4 px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all"
+          className="mt-4 px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all"
         >
-          Retry
+          🔁 Retry
         </button>
-      </div>
+      </motion.div>
     );
+  }
 
   return (
     <motion.div
@@ -67,7 +75,7 @@ const ProductList = () => {
         ))
       ) : (
         <motion.p
-          className="text-gray-400 text-lg text-center col-span-full"
+          className="text-gray-400 text-lg text-center col-span-full mt-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
@@ -80,6 +88,7 @@ const ProductList = () => {
 };
 
 export default ProductList;
+
 
 
 

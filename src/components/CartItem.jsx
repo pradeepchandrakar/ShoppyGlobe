@@ -56,14 +56,15 @@ const CartItem = ({ item }) => {
     setLoading(false);
   };
 
-  // ✅ Safe fallback product info
   const product = item.product || {};
   const title = product.title || "Untitled";
   const thumbnail = product.thumbnail || "https://via.placeholder.com/80";
-  const discountedPrice =
-    product.price && product.discount
-      ? (product.price * (1 - product.discount / 100)).toFixed(2)
-      : product.price || "N/A";
+  const price = product.price || 0;
+  const discount = product.discountPercentage || product.discount || 0;
+
+  const finalPrice = discount
+    ? (price * (1 - discount / 100)).toFixed(2)
+    : price.toFixed(2);
 
   return (
     <motion.div
@@ -71,7 +72,6 @@ const CartItem = ({ item }) => {
       transition={{ type: "spring", stiffness: 200 }}
       className="border border-[#EC4176] p-4 rounded-lg shadow-lg bg-[#1E1E2E] text-white flex justify-between items-center mb-4"
     >
-      {/* Product Details */}
       <div className="flex items-center space-x-4">
         <motion.img
           src={thumbnail}
@@ -81,11 +81,24 @@ const CartItem = ({ item }) => {
         />
         <div>
           <h2 className="text-lg font-semibold">{title}</h2>
-          <p className="text-green-400 text-xl font-bold">${discountedPrice}</p>
+          {discount > 0 ? (
+            <>
+              <p className="text-gray-400 line-through text-sm">
+                ${price.toFixed(2)}
+              </p>
+              <p className="text-green-400 text-xl font-bold">
+                ${finalPrice}
+              </p>
+              <p className="text-pink-500 text-xs font-medium">
+                {discount}% OFF
+              </p>
+            </>
+          ) : (
+            <p className="text-green-400 text-xl font-bold">${finalPrice}</p>
+          )}
         </div>
       </div>
 
-      {/* Quantity Controls */}
       <div className="flex items-center space-x-3">
         <button
           className="bg-gray-700 text-white px-3 py-1 rounded-l hover:bg-gray-500 transition disabled:opacity-50"
@@ -106,7 +119,6 @@ const CartItem = ({ item }) => {
         </button>
       </div>
 
-      {/* Remove Button */}
       <button
         className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition disabled:opacity-50"
         onClick={handleRemoveItem}
@@ -119,6 +131,9 @@ const CartItem = ({ item }) => {
 };
 
 export default CartItem;
+
+
+
 
 
 

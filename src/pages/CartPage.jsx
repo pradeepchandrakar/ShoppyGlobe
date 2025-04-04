@@ -5,20 +5,29 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const Cart = () => {
-  const cart = useSelector((state) => state.cart.items) || []; // Ensure cart is always an array
-  const [isMounted, setIsMounted] = useState(false); // Prevent hydration mismatch in SSR
+  const cart = useSelector((state) => state.cart.items) || [];
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true); // Ensure component is mounted
+    setIsMounted(true);
   }, []);
 
-  // UseMemo to optimize total price calculation
-  const totalPrice = useMemo(
-    () => cart.reduce((total, item) => total + (item.price || 0) * (item.quantity || 1), 0),
-    [cart]
-  );
+  // ✅ Correct discounted total price calculation
+  const totalPrice = useMemo(() => {
+    return cart.reduce((total, item) => {
+      const product = item.product || {};
+      const price = product.price || 0;
+      const discount = product.discountPercentage || product.discount || 0;
 
-  if (!isMounted) return null; // Prevents SSR hydration mismatch errors
+      const finalPrice = discount
+        ? price * (1 - discount / 100)
+        : price;
+
+      return total + finalPrice * (item.quantity || 1);
+    }, 0);
+  }, [cart]);
+
+  if (!isMounted) return null;
 
   return (
     <motion.div
@@ -40,12 +49,11 @@ const Cart = () => {
         <>
           <div className="space-y-4">
             {cart.map((item) => (
-              <CartItem key={item.id || item._id} item={item} />
+              <CartItem key={item.productId || item._id} item={item} />
             ))}
           </div>
 
           <div className="mt-6 flex justify-between items-center border-t border-gray-600 pt-4">
-            {/* Total Price Display */}
             <motion.h2
               className="text-2xl font-semibold text-[#EE544A]"
               initial={{ y: -10, opacity: 0 }}
@@ -55,7 +63,6 @@ const Cart = () => {
               Total: ${totalPrice.toFixed(2)}
             </motion.h2>
 
-            {/* Checkout Button */}
             <Link to="/checkout">
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -73,6 +80,7 @@ const Cart = () => {
 };
 
 export default Cart;
+
 
 
 
