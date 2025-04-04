@@ -110,7 +110,7 @@ Now visit 👉 `http://localhost:5173`
 
 | Method | Endpoint                   | Description                 |
 |--------|----------------------------|-----------------------------|
-| POST   | `/api/auth/register`       | Register new user           |
+| POST   | `/api/auth/signup`       | Register new user           |
 | POST   | `/api/auth/login`          | Login user & get token      |
 | GET    | `/api/products`            | Fetch all products          |
 | POST   | `/api/cart/add`            | Add item to cart            |
