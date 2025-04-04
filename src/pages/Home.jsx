@@ -51,7 +51,7 @@ const Home = () => {
 
   // Filter products based on debounced query
   const filteredProducts = products.filter((product) =>
-    (product?.name || "").toLowerCase().includes(debouncedQuery.toLowerCase())
+    (product?.title || "").toLowerCase().includes(debouncedQuery.toLowerCase())
   );
 
   return (

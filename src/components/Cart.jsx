@@ -16,10 +16,10 @@ const Cart = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get("http://localhost:5000/api/cart", {
-          headers: { Authorization: Bearer ${token} },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        dispatch(setCart(response.data.cart.items)); // ✅ Fetch cart from DB
+        dispatch(setCart(response.data.cart.items));
       } catch (error) {
         console.error("Error fetching cart:", error);
       }
@@ -51,7 +51,13 @@ const Cart = () => {
         <>
           <div className="space-y-4">
             {cart.map((item) => (
-              <CartItem key={item.productId} item={item} />
+              <CartItem
+                key={item.productId}
+                item={{
+                  ...item,
+                  product: item.product || item.productId || {}, // 🧠 fallback
+                }}
+              />
             ))}
           </div>
 
@@ -63,7 +69,16 @@ const Cart = () => {
               transition={{ duration: 0.4 }}
             >
               Total: $
-              {cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)}
+              {cart
+                .reduce((total, item) => {
+                  const price =
+                    item?.price ||
+                    item?.product?.price ||
+                    item?.productId?.price ||
+                    0;
+                  return total + price * item.quantity;
+                }, 0)
+                .toFixed(2)}
             </motion.h2>
 
             <Link to="/checkout">
@@ -83,6 +98,7 @@ const Cart = () => {
 };
 
 export default Cart;
+
 
 
 

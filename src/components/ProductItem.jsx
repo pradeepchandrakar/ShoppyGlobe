@@ -1,57 +1,80 @@
-import React, { useMemo } from "react";
+import React from "react";
+import { useDispatch } from "react-redux";
+import { setCart } from "../redux/cartSlice";
+import axios from "axios";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import useAddToCart from "../hooks/useAddToCart"; // ✅ custom hook
 
 const ProductItem = ({ product }) => {
-  const { addToCart } = useAddToCart(); // ✅ hook se logic lo
+  const dispatch = useDispatch();
 
-  if (!product) return <div className="text-red-500">Error: Product data missing.</div>;
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem("token");
 
-  const productId = product?._id || "";
-  const price = Number(product?.price) || 0;
-  const discountPercentage = Number(product?.discountPercentage) || 0;
+    if (!token) {
+      alert("Please log in to add items to the cart.");
+      return;
+    }
 
-  const discountedPrice = useMemo(() => (
-    (price - (price * discountPercentage) / 100).toFixed(2)
-  ), [price, discountPercentage]);
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/cart/add",
+        {
+          productId: product._id,
+          quantity: 1,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Enrich items with product details
+      const updatedCart = response.data.cart.items.map((item) => {
+        if (item.productId === product._id) {
+          return { ...item, product };
+        }
+        return item;
+      });
+
+      dispatch(setCart(updatedCart));
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add item to cart.");
+    }
+  };
 
   return (
-    <motion.div className="bg-[#24243E] p-6 rounded-xl text-center shadow-lg">
-      <motion.img
-        src={product?.thumbnail || "/placeholder.jpg"}
-        alt={product?.title}
-        className="w-48 h-48 object-cover"
+    <div className="bg-[#1E1E2E] border border-[#EC4186] rounded-xl p-4 shadow-md text-white">
+      <img
+        src={product.thumbnail}
+        alt={product.title}
+        className="w-full h-48 object-cover rounded-lg mb-4"
       />
+      <h2 className="text-lg font-bold mb-2">{product.title}</h2>
+      <p className="text-pink-400 font-semibold mb-4">${product.price}</p>
 
-      <h2 className="text-lg font-bold text-[#EC4186]">
-        {product?.title || "Unknown Product"}
-      </h2>
+      <div className="flex gap-2">
+        <button
+          onClick={handleAddToCart}
+          className="bg-[#EC4186] hover:bg-[#EE544A] text-white py-2 px-4 rounded-lg w-full"
+        >
+          🛒 Add to Cart
+        </button>
 
-      <p className="text-gray-400 line-through">${price.toFixed(2)}</p>
-      <p className="text-[#EE544A] text-xl font-semibold">${discountedPrice}</p>
-
-      <div className="flex justify-center space-x-3 mt-4">
         <Link
-          to={`/product/${productId}`}
-          className="bg-[#38124A] text-white px-4 py-2 rounded-lg"
+          to={`/product/${product._id}`}
+          className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg w-full text-center"
         >
-          View Details
+          🔍 View
         </Link>
-
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          className="bg-[#EC4186] text-white px-4 py-2 rounded-lg"
-          onClick={() => addToCart(productId)} // ✅ backend + redux
-        >
-          Add to Cart
-        </motion.button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 export default ProductItem;
+
 
 
 

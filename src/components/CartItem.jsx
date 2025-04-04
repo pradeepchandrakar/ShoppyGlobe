@@ -56,8 +56,10 @@ const CartItem = ({ item }) => {
     setLoading(false);
   };
 
-  // 🧠 Use product data from backend
+  // ✅ Safe fallback product info
   const product = item.product || {};
+  const title = product.title || "Untitled";
+  const thumbnail = product.thumbnail || "https://via.placeholder.com/80";
   const discountedPrice =
     product.price && product.discount
       ? (product.price * (1 - product.discount / 100)).toFixed(2)
@@ -72,13 +74,13 @@ const CartItem = ({ item }) => {
       {/* Product Details */}
       <div className="flex items-center space-x-4">
         <motion.img
-          src={product.thumbnail}
-          alt={product.title}
+          src={thumbnail}
+          alt={title}
           className="w-20 h-20 object-cover rounded-lg shadow-md border border-[#EC4176]"
           whileHover={{ scale: 1.05 }}
         />
         <div>
-          <h2 className="text-lg font-semibold">{product.title || "Untitled"}</h2>
+          <h2 className="text-lg font-semibold">{title}</h2>
           <p className="text-green-400 text-xl font-bold">${discountedPrice}</p>
         </div>
       </div>
@@ -117,6 +119,9 @@ const CartItem = ({ item }) => {
 };
 
 export default CartItem;
+
+
+
 
 
 
